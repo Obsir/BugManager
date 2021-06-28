@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+    {% load static %}
+    <script type="text/javascript" src="{% static 'js/csrf_token.js' %}"></script>
+    <style>
+        .account {
+            width: 400px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<div class="account">
+    <h1 style="text-align: center;">注册</h1>
+    <form action="" method="post">
+    {% csrf_token %}
+        {% for field in form %}
+            {% if field.name == 'code' %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <div class="clearfix">
+                        <div class="col-md-6" style="padding-left: 0;">{{ field }}</div>
+                        <div class="col-md-6"><input type="button" id="code" class="btn btn-default" value="点击获取验证码">
+                        </div>
+                    </div>
+
+                </div>
+            {% else %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">注 册</button>
+        <span>{{ form.errors }}</span>
+    </form>
+
+</div>
+<script>
+    var time = 10;
+    $('#code').click(function () {
+        var phone = $('#id_mobile_phone').val();
+        $(this).attr("disabled", true);
+        var timer = setInterval(function () {
+            if (time == 10) {
+                time--;
+                $.ajax({
+                    type: 'get',
+                    url: '{% url 'app01:sms' %}' + '?tpl=register',
+                    data: {
+                        "phone": phone
+                    },
+                    success: function (res) {
+                        if (res.status == 0) {
+                        } else {
+                            alert(res.msg);
+                            flag = true;
+                            time = 10;
+                            clearInterval(timer);
+                            $('#code').removeAttr("disabled");
+                            $('#code').val("点击获取验证码");
+                        }
+                    }
+                });
+            } else if (time == 0) {
+                $('#code').removeAttr("disabled");
+                $('#code').val("点击获取验证码");
+                clearInterval(timer);
+                time = 10;
+            } else {
+                $("#code").val(time + " s 重新发送");
+                time--;
+            }
+        }, 1000);
+    });
+
+
+</script>
+</body>
+</html>
