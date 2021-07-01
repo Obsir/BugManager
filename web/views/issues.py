@@ -228,7 +228,7 @@ def issues_change(request, project_id, issues_id):
         new_object = models.IssuesReply.objects.create(
             reply_type=1,
             issues=issues_object,
-            content=change_record,
+            content=content,
             creator=request.tracer.user,
         )
         new_reply_dict = {
