@@ -51,9 +51,9 @@ def payment(request, policy_id):
         balance_timedelta = _object.end_datetime - datetime.datetime.now()
         if total_timedelta.days == balance_timedelta.days:
             # 按照价值进行计算抵扣金额
-            balance = _object.price_policy * price * _object.count / total_timedelta.days * (balance_timedelta.days - 1)
+            balance = _object.price_policy.price * _object.count / total_timedelta.days * (balance_timedelta.days - 1)
         else:
-            balance = _object.price_policy * price * _object.count / total_timedelta.days * balance_timedelta.days
+            balance = _object.price_policy.price * _object.count / total_timedelta.days * balance_timedelta.days
 
     if balance >= origin_price:
         return redirect('price')
@@ -182,7 +182,7 @@ def pay(request):
         alipay_public_key_path=settings.ALI_PUB_KEY_PATH
     )
     query_params = ali_pay.direct_pay(
-        subject="trace rpayment",  # 商品简单描述
+        subject="tracer payment",  # 商品简单描述
         out_trade_no=order_id,  # 商户订单号
         total_amount=total_price
     )
@@ -208,7 +208,6 @@ def pay_notify(request):
         sign = params.pop('sign', None)
         status = ali_pay.verify(params, sign)
         if status:
-            """
             current_datetime = datetime.datetime.now()
             out_trade_no = params['out_trade_no']
             _object = models.Transaction.objects.filter(order=out_trade_no).first()
@@ -217,7 +216,6 @@ def pay_notify(request):
             _object.start_datetime = current_datetime
             _object.end_datetime = current_datetime + datetime.timedelta(days=365 * _object.count)
             _object.save()
-            """
             return HttpResponse('支付完成')
         return HttpResponse('支付失败')
     else:
